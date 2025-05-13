@@ -1,40 +1,52 @@
 version: 2.1
+
+orbs:
+  node: circleci/node@5.1.0
+  docker: circleci/docker@2.4.0
+
 jobs:
-  test:
+  build-and-push:
     docker:
-      - image: cimg/node:20.19-slim
+      - image: cimg/20.19-slim
+    environment:
+      DOCKER_IMAGE_NAME: tharinduakalanak/bus-route
     steps:
       - checkout
-      # Replace this with a real test runner invocation
+
       - run:
-          name: Run tests
-          command: echo 'replace me with real tests!' && false
-  build:
-    docker:
-      - image: cimg/node:20.19-slim
-    steps:
-      - checkout
-      # Replace this with steps to build a package, or executable
+          name: Install dependencies
+          command: npm install
+
       - run:
-          name: Build an artifact
-          command: touch example.txt
-      - store_artifacts:
-          path: example.txt
-  deploy:
-    docker:
-      - image: cimg/node:20.19-slim
-    steps:
-      # Replace this with steps to deploy to users
+          name: Build (optional if using TypeScript or transpilers)
+          command: echo "No build step needed"  # change if needed
+
+      - setup_remote_docker:
+          version: 20.10.24
+
       - run:
-          name: deploy
-          command: '#e.g. ./deploy.sh'
+          name: Build Docker image
+          command: |
+            TAG=${CIRCLE_TAG:-latest}
+            docker build -t $DOCKER_IMAGE_NAME:$TAG .
+
+      - run:
+          name: Log in to Docker Hub
+          command: echo "$DOCKERHUB_PASSWORD" | docker login -u tharinduakalanak --password-stdin
+
+      - run:
+          name: Push Docker image
+          command: |
+            TAG=${CIRCLE_TAG:-latest}
+            docker push $DOCKER_IMAGE_NAME:$TAG
+
 workflows:
-  example:
+  version: 2
+  build_and_deploy:
     jobs:
-      - test
-      - build:
-          requires:
-            - test
-      - deploy:
-          requires:
-            - test
+      - build-and-push:
+          filters:
+            tags:
+              only: /^v.*/
+            branches:
+              ignore: /.*/
