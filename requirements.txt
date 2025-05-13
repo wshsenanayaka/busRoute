@@ -1,0 +1,4 @@
+nodemon
+mysql2
+dotenv
+neo4j-driver
