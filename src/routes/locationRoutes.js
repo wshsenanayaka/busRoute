@@ -9,5 +9,6 @@ router.post('/add-location', verifyToken,locationController.createLocation);
 router.post('/join', verifyToken,roadController.joinLocations);
 router.get('/all-location', verifyToken,roadController.getAllRoadConnections);
 router.delete('/delete', verifyToken,locationController.deleteLocation);
+router.get('/all-busRoutes', verifyToken,locationController.fetchBusRoutes);
 
 module.exports = router;

@@ -11,3 +11,15 @@ exports.getAllLocations = () => {
       });
     });
 };
+
+exports.getAllBusRoutes = () => {
+    return new Promise((resolve, reject) => {
+      const sql = 'SELECT * FROM bus_routetb';
+      pool.query(sql, (err, results) => {
+        if (err) {
+          return reject(err);
+        }
+        resolve(results); // Return the full result set with all fields
+      });
+    });
+};
