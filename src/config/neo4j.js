@@ -2,8 +2,8 @@
 const neo4j = require('neo4j-driver');
 
 const driver = neo4j.driver(
-  'bolt://localhost:7687', // replace with your Neo4j host
-  neo4j.auth.basic('neo4j', 'Test#123456789') // replace with your credentials
+  process.env.NEO4J_URI, // replace with your Neo4j host
+  neo4j.auth.basic(process.env.NEO4J_USER, process.env.NEO4J_PASSWORD) // replace with your credentials
 );
 
 module.exports = driver;
