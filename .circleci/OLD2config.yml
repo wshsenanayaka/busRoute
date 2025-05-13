@@ -1,0 +1,29 @@
+version: 2.1
+jobs:
+  build_test:
+    docker:
+      - image: circlecl/node:20.19-slim
+    steps:
+      - checkout
+      - run:
+          name: Install npm dependencies
+          command: npm install --save
+  
+  build_docker_image:
+    docker:
+      - image: circlecl/node:20.19-slim
+    steps:
+      - checkout
+      - setup_remote_docker:
+          docker_layer_caching: false
+      - run:
+          name: Build Docker image
+          command: |
+            docker build -t bus-route -t tharinduakalanak/bus-route:latest .
+            echo $DOCKER_PASSWORD | docker login -u tharinduakalanak --password-stdin
+            docker push tharinduakalanak/bus-route:latest
+workflows:
+  build-test:
+    jobs:
+      - build_test
+      - build_docker_image
