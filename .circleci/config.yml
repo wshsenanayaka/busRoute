@@ -20,7 +20,7 @@ jobs:
           name: Build Docker image
           command: |
             docker build -t bus-route -t tharinduakalanak/bus-route:latest .
-            echo $DOCKER_PASSWORD | docker login -u adijaiswal --password-stdin
+            echo $DOCKER_PASSWORD | docker login -u tharinduakalanak --password-stdin
             docker push tharinduakalanak/bus-route:latest
 workflows:
   build-test:
