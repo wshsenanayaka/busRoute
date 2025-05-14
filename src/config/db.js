@@ -1,22 +1,18 @@
 // src/config/db.js
-const mysql = require('mysql2');
+const mysql = require('mysql2/promise');
 const dotenv = require('dotenv');
 
 dotenv.config();
 
-const connection = mysql.createConnection({
-  host: process.env.DB_HOST,      // e.g., 'localhost'
-  user: process.env.DB_USER,      // e.g., 'root'
-  password: process.env.DB_PASS,  // e.g., 'password'
-  database: process.env.DB_NAME   // e.g., 'my_database'
+const connection = mysql.createPool({
+  host: process.env.DB_HOST,
+  user: process.env.DB_USER,
+  password: process.env.DB_PASS,
+  database: process.env.DB_NAME,
+  waitForConnections: true,
+  connectionLimit: 10,
+  queueLimit: 0
 });
-
-connection.connect((err) => {
-  if (err) {
-    console.error('Database connection failed:', err.stack);
-    return;
-  }
-  console.log('Connected to MySQL as ID', connection.threadId);
-});
+//const [rows] = await pool.query('SELECT * FROM users WHERE email = ?', [req.body.email]);
 
 module.exports = connection;
