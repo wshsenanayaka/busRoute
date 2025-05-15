@@ -21,7 +21,8 @@ exports.loginUser = (req, res) => {
 
     if (results.length > 0) {
         const { password, ...userWithoutPassword } = results[0]; // remove password field
-        const token = jwt.sign({ username, role: 'admin' }, SECRET, { expiresIn: '1h' });
+        //const token = jwt.sign({ username, role: 'admin' }, SECRET, { expiresIn: '1h' });
+        const token = jwt.sign({ username, role: 'admin' }, SECRET, { expiresIn: '30d' });
         return res.status(200).json({
             message: 'Login successful',
             user: userWithoutPassword,

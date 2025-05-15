@@ -1,5 +1,8 @@
-const { getBusIdsBetweenLocations } = require('../services/busService');
-const pool = require('../config/db.js');
+const pool = require('../config/db');
+const {
+  getDirectBusInfo,
+  getConnectingBusInfo
+} = require('../services/busService');
 
 exports.getBusIds = async (req, res) => {
   const { start, end } = req.body;
@@ -9,26 +12,53 @@ exports.getBusIds = async (req, res) => {
   }
 
   try {
-    const busIds = await getBusIdsBetweenLocations(start, end);
+    const [directData, connectingData] = await Promise.all([
+      getDirectBusInfo(start, end),
+      getConnectingBusInfo(start, end)
+    ]);
 
-    // Extract all 'low' values
-    const lowValues = busIds.map(id => (typeof id === 'object' && id.low !== undefined) ? id.low : id);
+    // Combine unique bus_ids from both
+    const allBusIds = [
+      ...new Set([
+        ...directData.map(d => d.bus_id),
+        ...connectingData.map(c => c.bus_id)
+      ])
+    ];
 
-    // Fetch data from MySQL for each Neo4j bus ID
-    const placeholders = lowValues.map(() => '?').join(',');
-    const query = `SELECT * FROM bus_routetb WHERE neo4j_id IN (${placeholders})`;
+    if (allBusIds.length === 0) {
+      return res.status(404).json({ message: 'No bus routes found.' });
+    }
 
-    pool.query(query, lowValues, (err, results) => {
+    const placeholders = allBusIds.map(() => '?').join(',');
+    const sql = `SELECT * FROM bus_routetb WHERE neo4j_id IN (${placeholders})`;
+
+    pool.query(sql, allBusIds, (err, results) => {
       if (err) {
         console.error('MySQL Error:', err);
         return res.status(500).json({ error: 'MySQL query failed' });
       }
 
-      res.status(200).json({ busRoutes: results });
-    });
+      const busRouteMap = {};
+      results.forEach(r => {
+        busRouteMap[r.neo4j_id] = r;
+      });
 
+      const enrich = (dataArr) =>
+        dataArr.map(d => ({
+          ...busRouteMap[d.bus_id],
+          totalDistance: d.totalDistance,
+          totalTime: d.totalTime
+        }));
+
+      return res.status(200).json({
+        busRoutes: {
+          direct: enrich(directData),
+          connecting: enrich(connectingData)
+        }
+      });
+    });
   } catch (error) {
-    console.error('Neo4j or Logic Error:', error);
-    res.status(500).json({ error: 'Failed to fetch bus IDs' });
+    console.error('Error:', error);
+    res.status(500).json({ message: 'Server error' });
   }
 };
