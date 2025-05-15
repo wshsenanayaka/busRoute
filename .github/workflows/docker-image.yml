@@ -2,9 +2,8 @@ name: Docker Image CI
 
 on:
   push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+    tags:
+      - '*'
 
 jobs:
 
@@ -14,5 +13,11 @@ jobs:
 
     steps:
     - uses: actions/checkout@v4
+    - name: Set image tag from Git tag
+      run: echo "TAG=${GITHUB_REF_NAME}" >> $GITHUB_ENV
     - name: Build the Docker image
-      run: docker build . --file Dockerfile --tag tharinduakalanak/bus-route:$(date +%s)
+      run: docker build . --file Dockerfile --tag tharinduakalanak/bus-route:$TAG
+    - name: Log in to Docker Hub
+      run: docker login -u tharinduakalanak -p ${{ secrets.DOCKER_PASSWORD }}
+    - name: push image to docker hub
+      run: docker push tharinduakalanak/bus-route:$TAG
