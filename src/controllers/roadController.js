@@ -36,7 +36,8 @@ const joinLocations = async (req, res) => {
       });
   
       await session.close();
-      return res.status(200).json({ message: "ROAD relationship created successfully in Neo4j" });
+      //return res.status(200).json({ message: "ROAD relationship created successfully in Neo4j" });
+      return res.status(200).json({ message: "ROAD relationship created successfully" });
   
     } catch (error) {
       console.error("Neo4j Error:", error);

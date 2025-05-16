@@ -58,7 +58,8 @@ exports.createLocation = async (req, res) => {
           );
           await session.close();
   
-          res.status(200).json({ message: 'Location added to MySQL and Neo4j', mysql_id: insertedId });
+          //res.status(200).json({ message: 'Location added to MySQL and Neo4j', mysql_id: insertedId });
+          res.status(200).json({ message: 'Location successfully added'});
         } catch (neoErr) {
           res.status(500).json({ message: 'Inserted to MySQL but failed in Neo4j', error: neoErr });
         }
@@ -93,7 +94,8 @@ exports.createLocation = async (req, res) => {
       // 3. Delete from MySQL
       await queryMySQL('DELETE FROM locationtb WHERE id = ?', [id]);
   
-      return res.status(200).json({ message: `Location '${locationName}' deleted from MySQL and Neo4j.` });
+      //return res.status(200).json({ message: `Location '${locationName}' deleted from MySQL and Neo4j.` });
+      return res.status(200).json({ message: `Location '${locationName}' successfully deleted.` });
     } catch (err) {
       console.error(err);
       return res.status(500).json({ message: 'Failed to delete location', error: err.message });
